@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Stephen Jewson" />
+
+
+<title>catmodeling</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">catmodeling</h1>
+<h4 class="author">Stephen Jewson</h4>
+<h4 class="date">2024 Jan 26</h4>
+
+
+
+<div id="catmodeling-various-routines-for-processing-catastrophe-modeling-elts-and-ylts" class="section level2">
+<h2>1) <code>catmodeling</code>: Various Routines for Processing
+Catastrophe Modeling ELTs and YLTs</h2>
+<blockquote>
+<p><code>catmodeling</code> is an R library that contains various
+catastrophe modelling tools, including routines for (a) simulating YLTs;
+(b) simulating adjusted YLTs using incremental simulation, a novel
+simulation method that reduces simulation noise; (c) reducing the length
+of YLTs while still giving a good approximation to the AEP losses; (d)
+adjusting ELTs using historical losses; (e) analyzing catXL
+contracts.</p>
+</blockquote>
+</div>
+<div id="major-tools-included-in-catmodeling" class="section level2">
+<h2>2) Major tools included in <code>catmodeling</code></h2>
+<p>The major tools included in <code>catmodeling</code> are:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>yltsim</code>: simulates a YLT from an ELT using Poisson
+simulation, with or without secondary uncertainty.</p></li>
+<li><p><code>yltsim_inc</code>: simulates an adjusted YLT using
+incremental simulation, a method that reduces simulation noise.</p></li>
+<li><p><code>yltreduce</code>: reduces the length of a YLT while still
+giving a good approximation to the AEP losses</p></li>
+<li><p><code>eltmerge</code>: adjusts a model ELT using a short
+historical ELT, so that the model losses move closer to the historical
+losses.</p></li>
+<li><p><code>catxl</code>: applies a CatXL tower to a YLT and generates
+various outputs.</p></li>
+</ol>
+<p>These tools are documented in more detail below.</p>
+</div>
+<div id="minor-tools-included-in-catmodeling" class="section level2">
+<h2>3) Minor tools included in <code>catmodeling</code></h2>
+<p>The minor tools included in <code>catmodeling</code> are:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>calcbeta</code>: calculates the parameters of beta
+distributions from the mean and standard deviation.</p></li>
+<li><p><code>calcelt</code>: calculates some simple diagnostics from an
+ELT.</p></li>
+<li><p><code>calcylt</code>: calculates some simple diagnostics from a
+YLT.</p></li>
+<li><p><code>rate_adjustments_cat_to_event</code>: applies cat-by-cat
+rate adjustments to an ELT, to produce a new ELT.</p></li>
+<li><p><code>make_cep_rps</code>: calculates CEP return periods for
+events in an ELT.</p></li>
+<li><p><code>convertrp2index</code>: converts return periods to event
+index in an ELT.</p></li>
+<li><p><code>eltmerge_plotone</code>: makes a single plot using results
+from <code>eltmerge</code></p></li>
+<li><p><code>eltmerge_plot</code>: makes a multiplot using results from
+<code>eltmerge</code></p></li>
+<li><p><code>eltmerge_stats</code>: prints various diagnostics from
+<code>eltmerge</code> to the screen</p></li>
+</ol>
+</div>
+<div id="yltsim" class="section level2">
+<h2>4) <code>yltsim</code></h2>
+<p><code>yltsim</code> simulates a YLT from an ELT using Poisson
+simulation, with or without secondary uncertainty.</p>
+<p>The simplest use of <code>yltsim</code> is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Set up a data frame <code>elt</code> with the columns
+<code>mrate</code> and <code>mloss</code></li>
+<li>Call <code>yltsim</code> using
+<code>ylt=yltsim(nyears, elt)</code></li>
+<li><code>ylt</code> is a dataframe that contains the simulated
+YLT.</li>
+</ol>
+<p>The simulated YLT is stored as two objects:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>ylt$longylt</code>, in which every row is a simulated
+event</p></li>
+<li><p><code>ylt$shortylt</code>, in which every row is a simulated
+year, with summary information for that year</p></li>
+</ol>
+<p><code>yltsim</code> also includes the following functionality:</p>
+<ol style="list-style-type: decimal">
+<li><p>The <code>verbose</code> flag controls whether anything is output
+to the screen during simulation.</p></li>
+<li><p>The <code>secuncb</code> flag specifies whether secondary
+uncertainty is required. For secondary uncertainty to work, the input
+ELT must contain the additional columns <code>sloss</code> and
+<code>expo</code>.</p></li>
+<li><p>Columns in the ELT with the following headings will be propagated
+into the YLT:</p>
+<ul>
+<li><code>evid</code></li>
+<li><code>wspd</code> (windspeed, intended as landfall windspeed)</li>
+<li><code>lflat</code> (landfall latitude)</li>
+<li><code>lflon</code> (landfall longitude)</li>
+<li><code>lfreg</code> (landfall region)</li>
+</ul></li>
+</ol>
+<p>The additional columns can be used to story any data whatsoever,
+since the data is not used by <code>yltsim</code>, only copied.</p>
+</div>
+<div id="yltsim_inc" class="section level2">
+<h2>5) <code>yltsim_inc</code></h2>
+<p>Imagine you are planning to simulate a YLT from an ELT, adjust the
+ELT, resimulate the YLT, and compare the two YLTs. This process is
+subject to simulation noise: even if the ELT is not adjusted then the
+two YLTs will be different.</p>
+<p><code>yltsim_inc</code> gives a way to simulate the second YLT while
+greatly reducing the simulation noise. It does that using the
+<em>incremental simulation</em> algorithm (Jewson, 2023).</p>
+<p>The simplest use of <code>yltsim_inc</code> is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Set up a data frame <code>elt</code> with the columns
+<code>mrate</code> and <code>mloss</code></li>
+<li>Call <code>yltsim</code> using
+<code>ylt1=yltsim(nyears, elt)</code></li>
+<li>Set up desired rates adjustments in
+<code>rate_adjustments_by_event</code></li>
+<li>Call <code>yltsim_inc</code> using
+<code>ylt2=yltsim_inc(nyears,elt,ylt1)</code></li>
+<li><code>ylt2</code> is a dataframe that contains the adjusted YLT</li>
+</ol>
+<p>The rate adjustments can either be constant, or log-normally
+distributed. Using log-normally distributed rate adjustments allows for
+uncertainty in the adjustments, and the code uses the <em>stochastic
+parameter</em> simulation method, in which the rate adjustments are
+varied from year to year (Jewson, 2022).</p>
+<p>As with <code>yltsim</code>, <code>yltsim_inc</code> also supports
+the flags <code>verbose</code> and <code>secuncb</code>.</p>
+</div>
+<div id="yltreduce" class="section level2">
+<h2>6) <code>yltreduce</code></h2>
+<p><code>yltreduce</code> takes a YLT and deletes years to produce a YLT
+with fewer years. The years are deleted in such a way that the annual
+loss distribution remains as close as possible to the original annual
+loss distribution.</p>
+<p>One use-case would be to simulate a YLT with 100,000 years, and then
+use <code>yltreduce</code> to reduce the length of that YLT to 10,000
+years in order to fit into software tools that require 10,000 year YLTs.
+The 10,000 year YLT generated in this way would be much less affected by
+simulation noise than a 10,000 year YLT simulated directly from
+scratch.</p>
+<p>The simplest use of <code>yltsim_inc</code> is as follows:</p>
+<ol style="list-style-type: decimal">
+<li><p>Create the original YLT, <code>big_ylt</code></p></li>
+<li><p>Call <code>yltreduce</code> using
+<code>small_ylt=yltreduce(nyears_reduced, big_ylt)</code></p></li>
+</ol>
+<p><code>yltreduce</code> also includes the following functionality:</p>
+<ol style="list-style-type: decimal">
+<li><p>The <code>verbose</code> flag controls whether anything is output
+to the screen</p></li>
+<li><p>The <code>plotflag</code> makes some plots (mainly for debugging
+purposes)</p></li>
+</ol>
+</div>
+<div id="eltmerge" class="section level2">
+<h2>7) <code>eltmerge</code></h2>
+<p>Imagine you have model results which do not match historical losses
+at short return periods. If you believe the historical losses more than
+you believe the model results then you might want to adjust the model
+losses to move them towards the historical losses. That is what
+<code>eltmerge</code> does. It returns a new ELT with the same events as
+the original model ELT, but with new losses for the short return period
+events. It also produces plots that illustrate the historical, model and
+adjusted CEPs.</p>
+<p><code>eltmerge</code> can be used as follows:</p>
+<ol style="list-style-type: decimal">
+<li><p>Create the model and historical ELTs (<code>modelloss</code> and
+<code>histloss</code>)</p></li>
+<li><p>Call
+<code>newelt=eltmerge(nyhist, histloss, nymodel, modelloss, weightw)</code>
+where <code>nyhist</code> is the number of years represented in the
+model, and <code>nymodel</code> is the number of years represented in
+the historical data.</p></li>
+<li><p><code>newelt</code> is the new adjusted ELT.</p></li>
+</ol>
+<p>For very short return periods <code>eltmerge</code> puts almost all
+the weight onto the historical losses. For the longest historical return
+the weight that <code>eltmerge</code> puts onto the historical losses is
+specified using <code>weightw</code>.</p>
+</div>
+<div id="catxl" class="section level2">
+<h2>8) <code>catxl</code></h2>
+<p><code>catxl</code> applies a CatXL tower to a YLT. It accounts for
+any number of reinstatements. It calculates various outputs for the
+CatXL layers, including premium based on a percentage principle.</p>
+<p>To use <code>catxl</code>:</p>
+<ol style="list-style-type: decimal">
+<li><p>Create the YLT, and vectors that specify the limits, deductibles
+and the number of reinstatements by layer.</p></li>
+<li><p>Call <code>catxl</code> using
+<code>catxlresults=catxl(ylt, limit, deductible, nrst, premium, rst_premium_pc)</code>
+where <code>premium</code> is the overall premium, and
+<code>rst_premium_pc</code> are the layer premiums specified as
+percentages. The two input premiums can both be set to zero if premium
+calculations are not required.</p></li>
+<li><p><code>catxlresults</code> then contains 3 data frames.</p></li>
+</ol>
+<ul>
+<li><code>summary</code> gives annual average premiums by layer</li>
+<li><code>shortrecord</code> gives diagnostics by year</li>
+<li><code>longrecord</code> gives diagnostics by event (i.e., by claim),
+and can be used to track the entire calculation applied to every event
+and layer.</li>
+</ul>
+</div>
+<div id="references" class="section level2">
+<h2>9) References</h2>
+<ul>
+<li><p>For incremental simulation: Jewson (2023): “A new simulation
+algorithm for more precise estimates of change in catastrophe risk
+models, with application to hurricanes and climate change”. Stochastic
+Environmental Research and Risk Assessment. <a href="doi:10.1007/s00477-023-02409-0" class="uri">doi:10.1007/s00477-023-02409-0</a>.</p></li>
+<li><p>For stochastic parameter simulation: Jewson (2022): “Application
+of Uncertain Hurricane Climate Change Projections to Catastrophe Risk
+Models”. Stochastic Environmental Research and Risk Assessment. 36 (10):
+3355–3375. <a href="doi:10.1007/s00477-022-02198-y" class="uri">doi:10.1007/s00477-022-02198-y</a></p></li>
+</ul>
+</div>
+<div id="comments-questions-bug-reports-feature-requests" class="section level2">
+<h2>10) Comments, questions, bug reports, feature requests…</h2>
+<p>…are all welcome.</p>
+<p><a href="mailto:stephen.jewson@gmail.com" class="email">stephen.jewson@gmail.com</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

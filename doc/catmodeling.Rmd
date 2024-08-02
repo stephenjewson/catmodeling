@@ -1,0 +1,225 @@
+---
+title: "catmodeling"
+author: "Stephen Jewson"
+date: "2024 Jan 26"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{catmodeling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## 1) ```catmodeling```: Various Routines for Processing Catastrophe Modeling ELTs and YLTs
+
+> ```catmodeling``` is an R library that contains various 
+catastrophe modelling tools, including routines for 
+(a) simulating YLTs; 
+(b) simulating adjusted YLTs using incremental simulation, a novel simulation method that reduces simulation noise; 
+(c) reducing the length of YLTs while still giving a good approximation to the AEP losses; 
+(d) adjusting ELTs using historical losses; 
+(e) analyzing catXL contracts. 
+
+
+## 2) Major tools included in ```catmodeling```
+
+The major tools included in ```catmodeling``` are:
+
+1. ```yltsim```: simulates a YLT from an ELT using Poisson simulation, with
+or without secondary uncertainty.
+
+2. ```yltsim_inc```: simulates an adjusted YLT using incremental simulation,
+a method that reduces simulation noise.
+
+3. ```yltreduce```: reduces the length of a YLT while still giving a good
+approximation to the AEP losses
+
+4. ```eltmerge```: adjusts a model ELT using a short historical ELT, so that
+the model losses move closer to the historical losses.
+
+5. ```catxl```: applies a CatXL tower to a YLT and generates various
+outputs.
+
+These tools are documented in more detail below.
+
+## 3) Minor tools included in ```catmodeling```
+
+The minor tools included in ```catmodeling``` are:
+
+1. ```calcbeta```: calculates the parameters of beta distributions from the mean 
+and standard deviation.
+
+2. ```calcelt```: calculates some simple diagnostics from an ELT.
+
+3. ```calcylt```: calculates some simple diagnostics from a YLT.
+
+4. ```rate_adjustments_cat_to_event```: applies cat-by-cat rate adjustments to an ELT,
+to produce a new ELT. 
+
+5. ```make_cep_rps```: calculates CEP return periods for events in an ELT.
+
+6. ```convertrp2index```: converts return periods to event index in an ELT.
+
+7. ```eltmerge_plotone```: makes a single plot using results from ```eltmerge```
+
+8. ```eltmerge_plot```: makes a multiplot using results from ```eltmerge```
+
+9. ```eltmerge_stats```: prints various diagnostics from ```eltmerge``` to the screen
+
+## 4) ```yltsim```
+
+```yltsim``` simulates a YLT from an ELT using Poisson simulation, with
+or without secondary uncertainty.
+
+
+The simplest use of ```yltsim``` is as follows:
+
+1. Set up a data frame ```elt``` with the columns ```mrate``` and ```mloss```
+2. Call ```yltsim``` using ```ylt=yltsim(nyears, elt)```
+3. ```ylt``` is a dataframe that contains the simulated YLT.
+
+The simulated YLT is stored as two objects:
+
+1. ```ylt$longylt```, in which every row is a simulated event
+
+2. ```ylt$shortylt```, in which every row is a simulated year, with summary information for that year
+
+```yltsim``` also includes the following functionality:
+
+1. The ```verbose``` flag controls whether anything is output to the screen during simulation.
+
+2. The ```secuncb``` flag specifies whether secondary uncertainty is required. 
+For secondary uncertainty to work, the input ELT must contain the additional
+columns ```sloss``` and ```expo```.
+
+3. Columns in the ELT with the following headings will be propagated into the YLT:
+	+ ```evid```
+	+ ```wspd``` (windspeed, intended as landfall windspeed)
+	+ ```lflat``` (landfall latitude)
+	+ ```lflon``` (landfall longitude)
+	+ ```lfreg``` (landfall region)
+
+The additional columns can be used to story any data whatsoever, since the data is not
+used by ```yltsim```, only copied.
+
+## 5) ```yltsim_inc```
+
+Imagine you are planning to simulate a YLT from an ELT, adjust the
+ELT, resimulate the YLT, and compare the two YLTs.
+This process is subject to simulation noise: even if the ELT is not adjusted
+then the two YLTs will be different.
+
+```yltsim_inc``` gives a way to simulate the second YLT while greatly 
+reducing the simulation noise. It does that using the *incremental simulation*
+algorithm (Jewson, 2023).
+
+The simplest use of ```yltsim_inc``` is as follows:
+
+1. Set up a data frame ```elt``` with the columns ```mrate``` and ```mloss```
+2. Call ```yltsim``` using ```ylt1=yltsim(nyears, elt)```
+3. Set up desired rates adjustments in ```rate_adjustments_by_event```
+4. Call ```yltsim_inc``` using ```ylt2=yltsim_inc(nyears,elt,ylt1)```
+5. ```ylt2``` is a dataframe that contains the adjusted YLT
+
+The rate adjustments can either be constant, or log-normally distributed.
+Using log-normally distributed rate adjustments allows for uncertainty
+in the adjustments, and the code uses the *stochastic
+parameter* simulation method, in which the rate adjustments are varied
+from year to year (Jewson, 2022).
+
+As with ```yltsim```, ```yltsim_inc``` also supports the flags
+```verbose``` and ```secuncb```.
+
+## 6) ```yltreduce```
+
+```yltreduce``` takes a YLT and deletes years to produce a YLT with fewer years.
+The years are deleted in such a way that the annual loss distribution
+remains as close as possible to the original annual loss distribution.
+
+One use-case would be to simulate a YLT with 100,000 years, and then 
+use ```yltreduce``` to reduce the length of that YLT to 10,000 years in order
+to fit into software tools that require 10,000 year YLTs.
+The 10,000 year YLT generated in this way would be much less affected
+by simulation noise than a 10,000 year YLT simulated directly from scratch.
+
+
+The simplest use of ```yltsim_inc``` is as follows:
+
+1. Create the original YLT, ```big_ylt```
+
+2. Call ```yltreduce``` using ```small_ylt=yltreduce(nyears_reduced, big_ylt)```
+
+```yltreduce``` also includes the following functionality:
+
+1. The ```verbose``` flag controls whether anything is output to the screen 
+
+2. The ```plotflag``` makes some plots (mainly for debugging purposes)
+
+## 7) ```eltmerge```
+
+Imagine you have model results which do not match historical losses
+at short return periods. If you believe the historical losses more than you
+believe the model results then you might want to adjust the model losses
+to move them towards the historical losses. That is what ```eltmerge``` does.
+It returns a new ELT with the same events as the original model ELT,
+but with new losses for the short return period events.
+It also produces plots that illustrate the historical, model and 
+adjusted CEPs.
+
+```eltmerge``` can be used as follows:
+
+1. Create the model and historical ELTs (```modelloss``` and ```histloss```)
+
+2. Call ```newelt=eltmerge(nyhist, histloss, nymodel, modelloss, weightw)```
+where ```nyhist``` is the number of years represented in the model, 
+and ```nymodel``` is the number of years represented in the historical data.
+
+3. ```newelt``` is the new adjusted ELT.
+
+For very short return periods ```eltmerge``` puts almost all the weight
+onto the historical losses. 
+For the longest historical return the weight that ```eltmerge``` puts
+onto the historical losses is specified using ```weightw```.
+
+## 8) ```catxl```
+
+```catxl``` applies a CatXL tower to a YLT.
+It accounts for any number of reinstatements.
+It calculates various outputs for the CatXL layers, including premium 
+based on a percentage principle.
+
+To use ```catxl```:
+
+1. Create the YLT, and vectors that specify the limits, deductibles and the
+number of reinstatements by layer. 
+
+2. Call ```catxl``` using ```catxlresults=catxl(ylt, limit, deductible, nrst, premium, rst_premium_pc)```
+where ```premium``` is the overall premium, and ```rst_premium_pc``` are the
+layer premiums specified as percentages. The two input premiums can both be set 
+to zero if premium calculations are not required. 
+
+3. ```catxlresults``` then contains 3 data frames. 
++ ```summary``` gives annual average premiums by layer
++ ```shortrecord``` gives diagnostics by year 
++ ```longrecord``` gives diagnostics by event (i.e., by claim), and can be used
+to track the entire calculation applied to every event and layer.
+
+## 9) References
+
++ For incremental simulation: Jewson (2023): "A new simulation algorithm for more precise estimates of change in catastrophe risk models, with application to hurricanes and climate change". Stochastic Environmental Research and Risk Assessment. doi:10.1007/s00477-023-02409-0.
+
++ For stochastic parameter simulation: Jewson (2022): "Application of Uncertain Hurricane Climate Change Projections to Catastrophe Risk Models". Stochastic Environmental Research and Risk Assessment. 36 (10): 3355–3375. doi:10.1007/s00477-022-02198-y
+
+## 10) Comments, questions, bug reports, feature requests...
+
+...are all welcome.
+
+stephen.jewson@gmail.com
+
