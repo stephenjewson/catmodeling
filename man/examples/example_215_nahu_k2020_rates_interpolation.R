@@ -1,0 +1,23 @@
+#
+# set up all the arguments
+#
+rcp=8
+baseyear1=1900
+baseyear2=2022
+targetyear=2099
+k2020settings="Linear and Landfall"
+frequnc="Use distribution"
+quantile=90
+randomseed=0
+gmst=nahu_define_gmst_scenarios()
+landfall=nahu_define_k2020_zenodo_landfall_adj()
+#
+# and calculate the implied landfall rates changes
+#
+rates=nahu_k2020_rates_interpolation(rcp,baseyear1,baseyear2,targetyear,
+	k2020settings,frequnc,quantile,randomseed,gmst,landfall)
+#
+# have a look at region 1, mean change, all 7 cats
+#
+print(rates$mn1[1,])
+
