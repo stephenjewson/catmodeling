@@ -13,11 +13,15 @@ Description: A collection of tools for the manipulation of catastrophe model out
     tasks such as simulating year loss tables (YLTs) from event loss tables (ELTs), 
     adjusting the frequencies of events in YLTs to create new YLTs, 
     and calculating diagnostics from ELTs and YLTS, such as average annual loss 
-    and exceedance probability curves. Uses the compiled language Rust, and so requires
+    and exceedance probability curves. Frequency adjustment routines are 
+    based on the paper "A new simulation algorithm for 
+    more precise estimates of change in catastrophe risk models, with application to 
+    hurricanes and climate change", Jewson, S.; <doi:10.1007/s00477-023-02409-0>.
+    Uses the compiled language Rust, and so requires
     a Rust compiler to be installed.
 Imports: stats, dplyr, utils, pracma, geosphere
 Depends: R (>= 4.2)
-License: MIT
+License: MIT + file LICENSE
 BugReports: https://github.com/stephenjewson/catmodeling/issues
 URL: https://www.catmodeling.info 
 Encoding: UTF-8
